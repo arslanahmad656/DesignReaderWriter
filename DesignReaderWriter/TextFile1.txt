@@ -1,0 +1,83 @@
+﻿static void Main(string[] args)
+        {
+            try
+            {
+                var designText = File.ReadAllText(@"c:\files\template.xml");
+                UpdatePortalDesign(1002, designText);
+                var designs = ReadPortalDesign(1002);
+
+                //var template = ReadPortalTemplateDesign(2, "GroupID");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"{ex.GetType().FullName}: {ex.Message}");
+            }
+        }
+
+        static void UpdatePortalDesign(int portalId, string design)
+        {
+            var connString = "Server=.;Database=GID11-4;Trusted_Connection=True;";
+            using var connection = new SqlConnection(connString);
+            connection.Open();
+
+            var query = "UPDATE [SSPR].[PortalDesigns] SET Design = @design where ClientId = @clientId";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add(new SqlParameter("design", design));
+            command.Parameters.Add(new SqlParameter("clientId", portalId));
+
+            var result = command.ExecuteNonQuery();
+        }
+
+        static void UpdatePortalTemplateDesign(int clientType, string design)
+        {
+            var connString = "Server=.;Database=GID11-4;Trusted_Connection=True;";
+            using var connection = new SqlConnection(connString);
+            connection.Open();
+
+            var query = "UPDATE [SSPR].[PortalDesigns] SET Design = @design where ClientId = @clientId";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add(new SqlParameter("design", design));
+            command.Parameters.Add(new SqlParameter("clientId", clientType));
+
+            var result = command.ExecuteNonQuery();
+        }
+
+        static List<string> ReadPortalDesign(int portalId)
+        {
+            var connString = "Server=.;Database=GID11-4;Trusted_Connection=True;";
+            using var connection = new SqlConnection(connString);
+            connection.Open();
+
+            var query = "SELECT * FROM [SSPR].[PortalDesigns] WHERE ClientId = @client";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add(new SqlParameter("client", portalId));
+            using var reader = command.ExecuteReader();
+            var designes = new List<string>();
+            while (reader.Read())
+            {
+                designes.Add(reader["Design"].ToString());
+            }
+
+            return designes;
+        }
+
+        static string ReadPortalTemplateDesign(int clientType, string storeTypeName)
+        {
+            var connString = "Server=.;Database=GID11-4;Trusted_Connection=True;";
+            using var connection = new SqlConnection(connString);
+            connection.Open();
+
+            var query = "SELECT * FROM [SSPR].[PortalDesignTemplates] WHERE ClientType = @client and storetypename like @storetype";
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.Add(new SqlParameter("client", clientType));
+            command.Parameters.Add(new SqlParameter("storetype", storeTypeName));
+            using var reader = command.ExecuteReader();
+            var designes = new List<string>();
+            while (reader.Read())
+            {
+                designes.Add(reader["Template"].ToString());
+            }
+
+            var design = designes.Single();
+            return design;
+        }
